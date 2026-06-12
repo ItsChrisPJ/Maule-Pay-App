@@ -80,6 +80,20 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
 
+  <!-- Modal: Transaction Details -->
+  <div class="modal" id="modal-tx-details">
+    <div class="modal-content">
+      <div class="drag-handle"></div>
+      <div class="modal-header">
+        <h3>Detalle de Transacción</h3>
+        <button class="close-modal"><i class='bx bx-x'></i></button>
+      </div>
+      <div id="tx-details-body">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast-msg">Mensaje</div>
 `;
@@ -137,7 +151,7 @@ const views = {
     let txHtml = state.transactions.slice(0, 3).map(tx => {
       const isEscrow = tx.status === 'escrow';
       return `
-        <div class="list-item">
+        <div class="list-item" onclick="abrirDetalleTx('${tx.id}')" style="cursor:pointer;">
           <div class="item-icon"><i class='bx ${tx.icon}'></i></div>
           <div class="item-details">
             <div class="item-title">${tx.merchant}</div>
@@ -191,7 +205,7 @@ const views = {
       }
 
       return `
-        <div class="list-item">
+        <div class="list-item" onclick="abrirDetalleTx('${tx.id}')" style="cursor:pointer;">
           <div class="item-icon"><i class='bx ${tx.icon}'></i></div>
           <div class="item-details">
             <div class="item-title">${tx.merchant}</div>
@@ -288,7 +302,10 @@ const views = {
             <div style="font-weight:600; display:flex; align-items:center; gap:8px;">
               <i class='bx bx-moon' style="font-size:20px; color: var(--primary);"></i> Modo Oscuro
             </div>
-            <button class="btn-outline" style="padding: 8px 16px; font-size:13px; border-radius:10px;" onclick="toggleTheme()">Cambiar</button>
+            <label class="ios-switch">
+              <input type="checkbox" id="dark-toggle" onchange="toggleTheme()" ${document.body.classList.contains('dark') ? 'checked' : ''}>
+              <span class="ios-slider"></span>
+            </label>
           </div>
         </div>
       </div>
@@ -385,6 +402,7 @@ window.login = () => {
 };
 
 window.liberarPago = (txId) => {
+  event && event.stopPropagation(); // Prevent opening modal when clicking release button
   const tx = state.transactions.find(t => t.id === txId);
   if(tx && tx.status === 'escrow') {
     tx.status = 'done';
@@ -392,6 +410,12 @@ window.liberarPago = (txId) => {
     state.balance -= tx.amount; // The money leaves the user's total balance and goes to merchant
     showToast('Fondos liberados al comercio');
     renderView(currentView); // Refresh
+    
+    // Si el modal está abierto, actualizarlo también
+    const modal = document.getElementById('modal-tx-details');
+    if (modal.classList.contains('active')) {
+      abrirDetalleTx(txId);
+    }
   }
 };
 
@@ -431,20 +455,102 @@ window.toggleTheme = () => {
 
 // --- Modals & Events ---
 const modalNewTx = document.getElementById('modal-new-tx');
+const modalTxDetails = document.getElementById('modal-tx-details');
+
+const openModal = (modalEl) => {
+  modalEl.classList.add('active');
+  document.body.classList.add('modal-open');
+};
+
+const closeModal = (modalEl) => {
+  modalEl.classList.remove('active');
+  document.body.classList.remove('modal-open');
+};
+
+window.abrirDetalleTx = (txId) => {
+  const tx = state.transactions.find(t => t.id === txId);
+  if(!tx) return;
+  
+  const isEscrow = tx.status === 'escrow';
+  
+  document.getElementById('tx-details-body').innerHTML = `
+    <div style="text-align:center; margin-bottom: 24px;">
+      <div class="user-avatar" style="width:64px; height:64px; margin: 0 auto 16px; font-size:24px; background:var(--primary); color:white;">
+        <i class='bx ${tx.icon}'></i>
+      </div>
+      <h2 style="font-size:24px; margin-bottom:4px;">${formatMoney(tx.amount)}</h2>
+      <p style="color:var(--text-muted); font-size:14px;">${tx.merchant}</p>
+    </div>
+    
+    <div class="card" style="padding:16px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="color:var(--text-muted); font-size:14px;">Fecha</span>
+        <span style="font-weight:500; font-size:14px;">${tx.date}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="color:var(--text-muted); font-size:14px;">ID Operación</span>
+        <span style="font-weight:500; font-size:14px;">${tx.id}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="color:var(--text-muted); font-size:14px;">Modelo</span>
+        <span style="font-weight:600; font-size:14px; color: ${isEscrow ? '#f59e0b' : 'var(--accent)'};"><i class='bx bx-shield-quarter'></i> Escrow Maule-Pay</span>
+      </div>
+    </div>
+
+    <h4 style="margin:24px 0 16px; font-size:16px;">Estado del Escrow</h4>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-line"></div>
+        <div class="timeline-dot success"><i class='bx bx-check'></i></div>
+        <div class="timeline-content">
+          <div class="timeline-title">Pago Retenido (Escrow)</div>
+          <div class="timeline-desc">Los fondos están seguros en la bóveda de Maule-Pay.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-line"></div>
+        <div class="timeline-dot ${!isEscrow ? 'success' : 'active'}">
+          ${!isEscrow ? "<i class='bx bx-check'></i>" : "<i class='bx bx-time-five'></i>"}
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title">Esperando Entrega</div>
+          <div class="timeline-desc">El comercio prepara tu producto/servicio.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot ${!isEscrow ? 'success' : ''}">
+          ${!isEscrow ? "<i class='bx bx-check'></i>" : "<i class='bx bx-lock-open-alt'></i>"}
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title">Pago Liberado</div>
+          <div class="timeline-desc">El comercio ha recibido el dinero tras tu confirmación.</div>
+        </div>
+      </div>
+    </div>
+    
+    ${isEscrow ? `
+      <button class="btn btn-primary" onclick="liberarPago('${tx.id}')" style="margin-top:32px; width:100%;">
+        <i class='bx bx-check-shield'></i> Confirmar Recepción
+      </button>
+    ` : ''}
+  `;
+  
+  openModal(modalTxDetails);
+};
 
 document.getElementById('btn-fab-new').addEventListener('click', () => {
-  modalNewTx.classList.add('active');
+  openModal(modalNewTx);
 });
 
 document.querySelectorAll('.close-modal').forEach(btn => {
   btn.addEventListener('click', () => {
-    btn.closest('.modal').classList.remove('active');
+    closeModal(btn.closest('.modal'));
   });
 });
 
 document.querySelectorAll('.modal').forEach(mod => {
   mod.addEventListener('click', (e) => {
-    if (e.target === mod) mod.classList.remove('active');
+    if (e.target === mod) closeModal(mod);
   });
 });
 
@@ -482,7 +588,7 @@ document.getElementById('btn-submit-tx').addEventListener('click', () => {
       status: 'escrow'
     });
     
-    modalNewTx.classList.remove('active');
+    closeModal(modalNewTx);
     btn.innerHTML = original;
     document.getElementById('tx-merchant').value = '';
     document.getElementById('tx-amount').value = '';
