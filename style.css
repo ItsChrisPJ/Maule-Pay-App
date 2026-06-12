@@ -66,7 +66,11 @@ body.dark .drag-handle {
   background: #3f3f46;
 }
 body.dark .bottom-nav {
+  background: rgba(24, 24, 27, 0.85);
   box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
+}
+body.dark .top-header {
+  background: rgba(0, 0, 0, 0.85);
 }
 
 * {
@@ -104,7 +108,9 @@ html, body {
   padding-right: 24px;
   padding-bottom: 16px;
   padding-left: 24px;
-  background: var(--bg-color); /* White */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -153,7 +159,9 @@ html, body {
   width: 100%;
   max-width: 480px;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
-  background: var(--panel-bg);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: space-around;

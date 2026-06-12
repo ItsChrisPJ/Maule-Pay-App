@@ -235,7 +235,10 @@ const views = {
         <div class="card">
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Fondos Disponibles para Retiro</div>
           <div style="font-size: 28px; font-weight: 700; margin-bottom: 16px;">${formatMoney(state.balance - state.escrow)}</div>
-          <button class="btn btn-outline" onclick="retirarFondos()">Retirar al Banco</button>
+          <div style="display:flex; gap:12px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="retirarFondos()"><i class='bx bx-export'></i> Retirar</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="showToast('Cámara de QR iniciada')"><i class='bx bx-qr-scan'></i> QR</button>
+          </div>
         </div>
 
         <div class="list-header">Métodos de Pago</div>
