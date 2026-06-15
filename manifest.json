@@ -1,11 +1,23 @@
 {
   "name": "Maule-Pay",
   "short_name": "Maule-Pay",
-  "start_url": ".",
+  "start_url": "/Maule-Pay-App/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "./icon.png",
       "sizes": "1024x1024",

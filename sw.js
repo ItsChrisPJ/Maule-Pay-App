@@ -1,10 +1,12 @@
-const CACHE_NAME = 'maule-pay-cache-v1';
+const CACHE_NAME = 'maule-pay-cache-v2';
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './main.js',
   './icon.png',
+  './icon-192.png',
+  './icon-512.png',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;600;700&display=swap',
   'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
