@@ -1,4 +1,4 @@
-const CACHE_NAME = 'maule-pay-cache-v2';
+const CACHE_NAME = 'maule-pay-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
